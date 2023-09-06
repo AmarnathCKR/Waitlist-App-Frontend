@@ -1,9 +1,10 @@
 /* eslint-disable react/prop-types */
-import React from "react";
+import React, { useEffect } from "react";
 import Joi from "joi";
-import { PostAnyApi } from "../../api/api";
+import { PostAnyApi, getWithoutAuth } from "../../api/api";
 import { useDispatch } from "react-redux";
-import { subscribeToken, toogleLoading } from "../../store/store";
+import { subscribeToken, toogleLoading, unsuscribeToken } from "../../store/store";
+import { useNavigate } from "react-router-dom";
 
 const schema = Joi.object({
   name: Joi.string().alphanum().min(3).max(30).required(),
@@ -16,12 +17,31 @@ const schema = Joi.object({
 
 function SignUpModal(props) {
   const [input, setInput] = React.useState({});
+  const [referal, setRef] = React.useState(null);
   const [error, setError] = React.useState(null);
   const [hide, setHide] = React.useState(false);
   const dispatch = useDispatch();
+  const navigate = useNavigate();
+  useEffect(() => {
+    if (props.id) {
+      localStorage.removeItem("token");
+      dispatch(unsuscribeToken());
+      getWithoutAuth(`/user/check-ref?id=${props.id}`).then((res) => {
+        console.log(res);
+        setRef(res.data);
+        setInput({ ...input, refId: props.id });
+      }).catch((err)=>{
+        console.log(err);
+        setRef(null);
+        navigate("/")
+      })
+    }
+  }, [props.id]);
+
   const handleSubmit = (event) => {
     event.preventDefault();
     dispatch(toogleLoading());
+    
 
     const { error } = schema.validate({
       name: input.name ? input.name : "d",
@@ -32,41 +52,39 @@ function SignUpModal(props) {
     if (error) {
       if (error.details[0].message.includes("email")) {
         setError({ ...error, email: error.details[0].message });
-        dispatch(toogleLoading());
       }
       if (error.details[0].message.includes("name")) {
         setError({ ...error, name: error.details[0].message });
-        dispatch(toogleLoading());
       }
       if (error.details[0].message.includes("password")) {
         setError({ ...error, password: error.details[0].message });
-        dispatch(toogleLoading());
       }
 
       console.log(error.details[0].message);
       dispatch(toogleLoading());
     } else {
       setError("");
-      PostAnyApi("user/signup", input).then((res)=>{
-        console.log(res.data.token);
-        localStorage.setItem("token",res.data.token);
-        dispatch(subscribeToken(res.data.token));
-        props.toggleSign();
-        dispatch(toogleLoading());
-      })
-      .catch((err)=>{
-        console.log(err);
-        setError({...error,main : err.response.data.error})
-        dispatch(toogleLoading());
-      })
+      PostAnyApi("user/signup", input)
+        .then((res) => {
+          console.log(res.data.token);
+          localStorage.setItem("token", res.data.token);
+          dispatch(subscribeToken(res.data.token));
+          props.toggleSign();
+          dispatch(toogleLoading());
+          navigate("/")
+        })
+        .catch((err) => {
+          console.log(err);
+          setError({ ...error, main: err.response.data.error });
+          dispatch(toogleLoading());
+        });
     }
   };
-  
 
-  const handleSwitch = ()=>{
-    props.toggleSign(); 
+  const handleSwitch = () => {
+    props.toggleSign();
     props.toggleLogin();
-  }
+  };
   return (
     <>
       <div className="z-50 modal-local p-4">
@@ -77,8 +95,17 @@ function SignUpModal(props) {
             </h4>
           </div>
           <div className="modal-local-body ng-white dark:bg-blue-gray-700 text-black dark:text-white text-center">
-            <h2 className={error?.main ? "text-red-900 py-3 text-lg font-medium" : "text-black py-3 text-lg font-medium"}>
+            <h2
+              className={
+                error?.main
+                  ? "text-red-900 py-3 text-lg font-medium"
+                  : "text-black py-3 text-lg font-medium"
+              }
+            >
               {error?.main ? error?.main : "Please Enter your Details"}
+              <p className="text-xs">
+                {referal && `You have been referred by ${referal}`}
+              </p>
             </h2>
             <form onSubmit={handleSubmit}>
               <div className="flex flex-col my-4 mx-2">

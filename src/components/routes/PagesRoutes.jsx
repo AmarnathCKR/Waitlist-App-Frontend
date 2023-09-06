@@ -11,42 +11,43 @@ import {
 import { NavbarDefault } from "../Layout/NavbarDefault";
 import HomePage from "../pages/HomePage";
 import { getAnyApi } from "../../api/api";
+import AdminRoute from "./AdminRoute";
 
 function PagesRoutes() {
   const [login, setLogin] = useState(false);
   const [sign, setSign] = useState(false);
   const [token, setToken] = useState(null);
   const dispatch = useDispatch();
-    useEffect(() => {
-      const localToken = localStorage.getItem("token");
+  const auth = useSelector((state) => state.token);
+  useEffect(() => {
+    const localToken = localStorage.getItem("token");
 
-      if (localToken) {
-        dispatch(toogleLoading());
-        getAnyApi("user/verifytoken", localToken)
-          .then((res) => {
-            dispatch(subscribeUser(res.data));
-            dispatch(subscribeToken(localToken));
+    if (localToken) {
+      dispatch(toogleLoading());
+      getAnyApi("user/verifytoken", localToken)
+        .then((res) => {
+          dispatch(subscribeUser(res.data));
+          dispatch(subscribeToken(localToken));
+          dispatch(toogleLoading());
+        })
+        .catch((err) => {
+          if (err.response.data.data.errors[0].code === "USER_BLOCKED") {
+            localStorage.removeItem("token");
+            dispatch(unsuscribeToken());
             dispatch(toogleLoading());
-          })
-          .catch((err) => {
-            if (err.response.data.data.errors[0].code === "USER_BLOCKED") {
-              localStorage.removeItem("token");
-              dispatch(unsuscribeToken());
-              dispatch(toogleLoading());
-            }
-          });
-          setToken(true);
-      }else{
-        setToken(false);
-      }
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
-
-    const auth = useSelector((state) => state.token);
-    console.log(auth);
-    if (token === null) {
-      return;
+          }
+        });
+      setToken(true);
+    } else {
+      setToken(false);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [auth]);
+
+  console.log(auth);
+  if (token === null) {
+    return;
+  }
 
   return (
     <div className="w-full p-2 bg-white dark:bg-gray-900">
@@ -77,49 +78,23 @@ function PagesRoutes() {
               />
             }
           />
-          {/* <Route
-            path="account/*"
+          <Route
+            path="/referral/:id"
             element={
-              <AccountRouter
+              <HomePage
                 login={login}
+                sign={sign}
                 toggleLogin={() => {
                   setLogin(!login);
+                }}
+                toggleSign={() => {
+                  setSign(!sign);
                 }}
               />
             }
           />
 
-          <Route
-            path="manage/*"
-            element={
-              auth ? (
-                <ManageMovies />
-              ) : (
-                <AccountRouter
-                  login={login}
-                  toggleLogin={() => {
-                    setLogin(!login);
-                  }}
-                />
-              )
-            }
-          />
-          <Route path="details/:id" element={<MovieDetail />} />
-          <Route
-            path="watchlater/*"
-            element={
-              auth ? (
-                <WatchLater />
-              ) : (
-                <AccountRouter
-                  login={login}
-                  toggleLogin={() => {
-                    setLogin(!login);
-                  }}
-                />
-              )
-            }
-          /> */}
+          <Route path="/admin" element={<AdminRoute />} />
         </Routes>
       </BrowserRouter>
     </div>

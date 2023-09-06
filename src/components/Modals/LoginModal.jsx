@@ -1,6 +1,5 @@
 /* eslint-disable react/prop-types */
 import React from 'react'
-import { useNavigate } from 'react-router';
 import Joi from 'joi';
 import { PostAnyApi } from '../../api/api';
 import { useDispatch } from 'react-redux';
@@ -16,7 +15,6 @@ function LoginModal(props) {
   const [input, setInput] = React.useState({});
   const [error,setError] = React.useState(null);
   const [hide, setHide] = React.useState(false);
-  const navigate = useNavigate();
   const dispatch = useDispatch();
   const handleSubmit = (event) => {
     dispatch(toogleLoading());
@@ -37,18 +35,18 @@ function LoginModal(props) {
       dispatch(toogleLoading());
     } else {
       setError('');
-      // Submit form data
       PostAnyApi("user/login", input).then((res)=>{
         console.log(res.data.token);
         localStorage.setItem("token",res.data.token);
         dispatch(subscribeToken(res.data.token));
-        navigate("/");
         dispatch(toogleLoading());
+        props.toggleLogin();
       })
       .catch((err)=>{
         console.log(err);
         setError({...error,main : err.response.data.error})
         dispatch(toogleLoading());
+
       })
     }
   };

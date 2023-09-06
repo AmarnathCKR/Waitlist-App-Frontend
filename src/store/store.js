@@ -8,24 +8,12 @@ const loadingSlice = createSlice({
     toogleLoading: (state, actions) => {
       return (state = !state);
     },
-    
+
   },
 });
 
 
 
-const moviesSlice = createSlice({
-  name: "movies",
-  initialState: [],
-  reducers: {
-    subscribemovies: (state, actions) => {
-      return (state = actions.payload);
-    },
-    unsuscribemovies: (state, actions) => {
-      return (state = "");
-    },
-  },
-});
 
 const tokenSlice = createSlice({
   name: "Token",
@@ -51,14 +39,26 @@ const userSlice = createSlice({
     },
   },
 });
+const adminTokenSlice = createSlice({
+  name: "JWT ADMIN",
+  initialState: "",
+  reducers: {
+    subscribeAdminToken: (state, actions) => {
+      return (state = actions.payload);
+    },
+    unsuscribeAdminToken: (state, actions) => {
+      return (state = "");
+    },
+  },
+});
 
 
 const store = configureStore({
   reducer: {
     loading: loadingSlice.reducer,
     token: tokenSlice.reducer,
-    movies: moviesSlice.reducer,
-    user : userSlice.reducer,
+    user: userSlice.reducer,
+    admin: adminTokenSlice.reducer
   },
 });
 
@@ -66,11 +66,10 @@ export default store;
 
 export const { toogleLoading } = loadingSlice.actions;
 
-export const { subscribemovies, unsuscribemovies } =
-  moviesSlice.actions;
-
-  export const { subscribeToken, unsuscribeToken } =
+export const { subscribeToken, unsuscribeToken } =
   tokenSlice.actions;
 
-  export const { subscribeUser, unsuscribeUser } =
+export const { subscribeUser, unsuscribeUser } =
   userSlice.actions;
+
+export const { subscribeAdminToken, unsuscribeAdminToken } = adminTokenSlice.actions;

@@ -1,41 +1,77 @@
 /* eslint-disable react/prop-types */
+import { useDispatch, useSelector } from "react-redux";
 import heroImage from "../../assets/images/hero.png";
 import LoginModal from "../Modals/LoginModal";
 import SignUpModal from "../Modals/SignUpModal";
+import WaitlistDashboard from "./WaitlistDashboard";
+import { useParams } from "react-router-dom";
+import { useEffect } from "react";
+import { unsuscribeToken } from "../../store/store";
 
 function HomePage(props) {
+  const auth = useSelector((state) => state.token);
+  let dispatch = useDispatch();
+  let { id } = useParams();
+
+  useEffect(() => {
+    if (id) {
+      localStorage.removeItem("token");
+      dispatch(unsuscribeToken());
+      
+    }
+  }, []);
   return (
     <div>
-      {props?.login && <LoginModal toggleLogin={props.toggleLogin} toggleSign={props.toggleSign} />}
-      {props?.sign && <SignUpModal toggleSign={props.toggleSign} toggleLogin={props.toggleLogin} />}
-      <section className="bg-white dark:bg-gray-900">
-        <div className="grid max-w-screen-xl px-4 pt-20 pb-8 mx-auto lg:gap-8 xl:gap-0 lg:py-16 lg:grid-cols-12 lg:pt-28">
-          <div className="mr-auto place-self-center lg:col-span-7">
-            <h1 className="max-w-2xl mb-4 text-4xl font-extrabold leading-none tracking-tight md:text-5xl xl:text-6xl dark:text-white">
-              Join the Exclusive iPhone 18 Pro <br />
-              Waiting List Today!
-            </h1>
-            <p className="max-w-2xl mb-6 font-light text-gray-500 lg:mb-8 md:text-lg lg:text-xl dark:text-gray-400">
-              Be among the first to experience the iPhone 18 Pro. Join our
-              exclusive waiting list and{" "}
-              <span className="hover:underline">gain access</span> to a world of
-              benefits, including priority access, early updates, and potential
-              promotions.{" "}
-              <span className="hover:underline">Don&apos;t miss</span> your
-              chance{" "}
-              <span className="hover:underline"> to own the future.</span>.
-            </p>
-            <div className="flex items-center justify-center">
-              <a onClick={props.toggleSign} className="inline-flex items-center justify-center cursor-pointer w-full px-5 md:px-8 py-3 md:py-6 text-sm font-medium text-center text-gray-900 border border-gray-200 rounded-lg sm:w-auto hover:bg-gray-100 focus:ring-4 focus:ring-gray-100 dark:text-white dark:border-gray-700 dark:hover:bg-gray-700 dark:focus:ring-gray-800">
-                Join the waitlist now!
-              </a>
+      {props?.login && (
+        <LoginModal
+          toggleLogin={props.toggleLogin}
+          toggleSign={props.toggleSign}
+        />
+      )}
+      {props?.sign && (
+        <SignUpModal
+          toggleSign={props.toggleSign}
+          toggleLogin={props.toggleLogin}
+          id={id}
+        />
+      )}
+      {auth ? (
+        <WaitlistDashboard />
+      ) : (
+        <>
+          <section className="bg-white dark:bg-gray-900">
+            <div className="grid max-w-screen-xl px-4 pt-20 pb-8 mx-auto lg:gap-8 xl:gap-0 lg:py-16 lg:grid-cols-12 lg:pt-28">
+              <div className="mr-auto place-self-center lg:col-span-7">
+                <h1 className="max-w-2xl mb-4 text-4xl font-extrabold leading-none tracking-tight md:text-5xl xl:text-6xl dark:text-white">
+                  Join the Exclusive iPhone 18 Pro <br />
+                  Waiting List Today!
+                </h1>
+                <p className="max-w-2xl mb-6 font-light text-gray-500 lg:mb-8 md:text-lg lg:text-xl dark:text-gray-400">
+                  Be among the first to experience the iPhone 18 Pro. Join our
+                  exclusive waiting list and{" "}
+                  <span className="hover:underline">gain access</span> to a
+                  world of benefits, including priority access, early updates,
+                  and potential promotions.{" "}
+                  <span className="hover:underline">Don&apos;t miss</span> your
+                  chance{" "}
+                  <span className="hover:underline"> to own the future.</span>.
+                </p>
+                <div className="flex items-center justify-center">
+                  <a
+                    onClick={props.toggleSign}
+                    className="inline-flex items-center justify-center cursor-pointer w-full px-5 md:px-8 py-3 md:py-6 text-sm font-medium text-center text-gray-900 border border-gray-200 rounded-lg sm:w-auto hover:bg-gray-100 focus:ring-4 focus:ring-gray-100 dark:text-white dark:border-gray-700 dark:hover:bg-gray-700 dark:focus:ring-gray-800"
+                  >
+                    Join the waitlist now!
+                  </a>
+                </div>
+              </div>
+              <div className="hidden w-full lg:mt-0 lg:col-span-5 lg:flex">
+                <img className="w-full" src={heroImage} alt="hero image" />
+              </div>
             </div>
-          </div>
-          <div className="hidden w-full lg:mt-0 lg:col-span-5 lg:flex">
-            <img className="w-full" src={heroImage} alt="hero image" />
-          </div>
-        </div>
-      </section>
+          </section>
+        </>
+      )}
       <section className="bg-white dark:bg-gray-900">
         <div className="items-center max-w-screen-xl px-4 py-8 mx-auto lg:grid lg:grid-cols-4 lg:gap-16 xl:gap-24 lg:py-24 lg:px-6">
           <div className="col-span-2 mb-8">

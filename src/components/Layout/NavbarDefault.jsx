@@ -8,12 +8,12 @@ import {
   Button,
   IconButton,
 } from "@material-tailwind/react";
-import { useDispatch } from "react-redux";
-import { toogleLoading } from "../../store/store";
+import { useDispatch, useSelector } from "react-redux";
+import { toogleLoading, unsuscribeToken } from "../../store/store";
 import { useNavigate } from "react-router";
 import { Link } from "react-router-dom";
 
-export function NavbarDefault({ toggleLogin }) {
+export function NavbarDefault({ toggleLogin, toggleSign }) {
   const [openNav, setOpenNav] = React.useState(false);
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -27,6 +27,8 @@ export function NavbarDefault({ toggleLogin }) {
       () => window.innerWidth >= 960 && setOpenNav(false)
     );
   }, []);
+
+  const auth = useSelector((state) => state.token);
 
   React.useEffect(() => {
     const sunIcon = document.querySelector(".sun");
@@ -99,29 +101,32 @@ export function NavbarDefault({ toggleLogin }) {
         color="blue-gray"
         className="p-1  font-normal"
       >
-        <Link
-          className="flex cursor-pointer text-blue-gray-900 dark:text-white items-center"
-          to="/account"
-        >
-          Account
-        </Link>
-      </Typography>
-      <Typography
-        as="li"
-        variant="small"
-        color="blue-gray"
-        className="p-1 font-normal"
-      >
         <a
-          onClick={() => {
-            navigate("/manage");
-          }}
+        onClick={!auth && toggleSign}
           className="flex cursor-pointer text-blue-gray-900 dark:text-white items-center"
+          
         >
-          Manage Your Movies 
+          {auth ? "Home" : "SignUp"}
         </a>
       </Typography>
-      <Typography
+      {auth ? (
+        ""
+      ) : (
+        <Typography
+          as="li"
+          variant="small"
+          color="blue-gray"
+          className="p-1 font-normal"
+        >
+          <a
+            onClick={toggleLogin}
+            className="flex cursor-pointer text-blue-gray-900 dark:text-white items-center"
+          >
+            Login
+          </a>
+        </Typography>
+      )}
+      {auth && <Typography
         as="li"
         variant="small"
         color="blue-gray"
@@ -129,28 +134,28 @@ export function NavbarDefault({ toggleLogin }) {
       >
         <a
           onClick={() => {
-            navigate("/watchlater");
+            localStorage.removeItem("token");
+            dispatch(unsuscribeToken());
           }}
           className="flex text-blue-gray-900 cursor-pointer dark:text-white items-center"
         >
-          Watch Later
+          Logout
         </a>
-      </Typography>
-      
+      </Typography>}
     </ul>
   );
 
   return (
     <Navbar className="mx-auto w-full bg-white dark:bg-gray-900 py-2 px-4 lg:px-8 lg:py-4">
       <div className="container mx-auto flex items-center justify-between bg-white dark:bg-gray-900 text-blue-gray-900 dark:text-white">
-        <Typography
-          as="a"
-          
-          className="mr-4 cursor-pointer py-1.5 font-medium "
-        >
-          <a onClick={() => {
-            navigate("/");
-          }}>iPhone booking App</a>
+        <Typography as="a" className="mr-4 cursor-pointer py-1.5 font-medium ">
+          <a
+            onClick={() => {
+              navigate("/");
+            }}
+          >
+            iPhone booking App
+          </a>
         </Typography>
         <div className="hidden lg:block text-blue-gray-900 dark:text-white">
           {navList}
